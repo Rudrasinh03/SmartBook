@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>AR Video Auto Ratio</title>
+    <title>AR Video Auto Ratio with Camera Background</title>
 
     <!-- A-Frame + MindAR -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -14,7 +14,7 @@
         margin: 0;
         overflow: hidden;
         height: 100%;
-        background: black;
+        background: transparent;
       }
       #status {
         position: fixed;
@@ -36,10 +36,11 @@
     <a-scene
       mindar-image="imageTargetSrc: targets.mind; autoStart: true;"
       color-space="sRGB"
-      renderer="colorManagement: true, physicallyCorrectLights: false, alpha: true"
+      renderer="colorManagement: true; physicallyCorrectLights: false; alpha: true"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
       embedded
+      background="transparent: true"
     >
       <a-assets>
         <video
@@ -54,7 +55,8 @@
         ></video>
       </a-assets>
 
-      <a-camera look-controls="enabled: false"></a-camera>
+      <!-- Camera feed is visible now -->
+      <a-camera look-controls="enabled: false" position="0 0 0"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
         <a-video
@@ -75,7 +77,7 @@
       const plane = document.querySelector("#videoPlane");
       const status = document.getElementById("status");
 
-      // 🧠 Detect video ratio automatically
+      // 🧠 Auto video ratio
       video.addEventListener("loadedmetadata", () => {
         const videoWidth = video.videoWidth;
         const videoHeight = video.videoHeight;
@@ -84,11 +86,9 @@
           const aspectRatio = videoWidth / videoHeight;
 
           if (aspectRatio >= 1) {
-            // Landscape (wider)
             plane.setAttribute("width", 1);
             plane.setAttribute("height", 1 / aspectRatio);
           } else {
-            // Portrait (taller)
             plane.setAttribute("height", 1);
             plane.setAttribute("width", aspectRatio);
           }
