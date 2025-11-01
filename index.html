@@ -1,193 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Juice AR Premium View</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Juice AR Premium View</title>
 
-  <!-- A-Frame + MindAR -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      overflow: hidden;
-      background: transparent; /* ✅ allow camera feed background */
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    /* ✅ FIX 1: Ensure A-Scene (AR Viewport) is Fixed and Full-Screen */
+    a-scene {
+        position: fixed; 
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
     }
 
-    .hearts-container {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 9998;
-      overflow: hidden;
-    }
+    .hearts-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      overflow: hidden;
+    }
 
-    .heart {
-      position: absolute;
-      bottom: -30px;
-      font-size: 20px;
-      opacity: 0.8;
-      filter: drop-shadow(0 0 6px rgba(255,0,100,0.8));
-      animation: floatUp linear forwards;
-    }
+    .heart {
+      position: absolute;
+      bottom: -30px;
+      font-size: 20px;
+      opacity: 0.8;
+      filter: drop-shadow(0 0 6px rgba(255,0,100,0.8));
+      animation: floatUp linear forwards;
+    }
 
-    @keyframes floatUp {
-      0% {
-        transform: translateY(0) scale(1) rotate(0deg);
-        opacity: 0.3;
-      }
-      50% {
-        transform: translateY(-60vh) scale(1.4) rotate(180deg);
-        opacity: 0.7;
-      }
-      100% {
-        transform: translateY(-120vh) scale(1.2) rotate(360deg);
-        opacity: 0;
-      }
-    }
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) scale(1) rotate(0deg);
+        opacity: 0.3;
+      }
+      50% {
+        transform: translateY(-60vh) scale(1.4) rotate(180deg);
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateY(-120vh) scale(1.2) rotate(360deg);
+        opacity: 0;
+      }
+    }
 
-    #share {
-      display: none;
-      position: fixed;
-      bottom: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      color: #fff;
-      font-family: sans-serif;
-      background: rgba(0,0,0,0.4);
-      padding: 8px 14px;
-      border-radius: 10px;
-      backdrop-filter: blur(6px);
-    }
+    #share {
+      display: none;
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      color: #fff;
+      font-family: sans-serif;
+      background: rgba(0,0,0,0.4);
+      padding: 8px 14px;
+      border-radius: 10px;
+      backdrop-filter: blur(6px);
+    }
 
-    #share a {
-      color: #ff6b00;
-      margin: 0 8px;
-      text-decoration: none;
-    }
-  </style>
+    #share a {
+      color: #ff6b00;
+      margin: 0 8px;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
-  <!-- Flying hearts -->
-  <div class="hearts-container" id="hearts"></div>
+    <div class="hearts-container" id="hearts"></div>
 
-  <!-- Share links -->
-  <div id="share">
-    Share: 
-    <a id="shareFb" href="#" target="_blank">Facebook</a> |
-    <a id="shareX" href="#" target="_blank">X</a>
-  </div>
+    <div id="share">
+    Share: 
+    <a id="shareFb" href="#" target="_blank">Facebook</a> |
+    <a id="shareX" href="#" target="_blank">X</a>
+  </div>
 
-  <!-- MindAR Scene -->
-  <a-scene
-    mindar-image="imageTargetSrc: targets.mind; autoStart: true;"
-    embedded
-    color-space="sRGB"
-    renderer="alpha: true; antialias: true; colorManagement: true; physicallyCorrectLights: true;"
-    vr-mode-ui="enabled: false"
-  >
-    <a-assets>
-      <video id="juiceVideo" src="sample.mp4" preload="auto" playsinline webkit-playsinline autoplay muted loop crossorigin="anonymous"></video>
-    </a-assets>
+    <a-scene
+    mindar-image="imageTargetSrc: targets.mind; autoStart: true;"
+    embedded
+    color-space="sRGB"
+    renderer="alpha: true; antialias: true; colorManagement: true; physicallyCorrectLights: true;"
+    vr-mode-ui="enabled: false"
+  >
+    <a-assets>
+      <video id="juiceVideo" src="sample.mp4" preload="auto" playsinline webkit-playsinline autoplay muted loop crossorigin="anonymous"></video>
+    </a-assets>
 
-    <a-camera position="0 0 0" look-controls="false"></a-camera>
+    <a-camera position="0 0 0" look-controls="false"></a-camera>
 
-    <a-entity mindar-image-target="targetIndex: 0">
-      <!-- ✅ Smooth scaling video plane -->
-      <a-plane id="videoPlane"
-               position="0 0 0"
-               rotation="0 0 0"
-               visible="false"
-               scale="0 0 0"
-               material="shader: flat; src: #juiceVideo;">
-      </a-plane>
-    </a-entity>
-  </a-scene>
+    <a-entity mindar-image-target="targetIndex: 0">
+            <a-plane id="videoPlane"
+               position="0 0 0.01" 
+               rotation="0 0 0"
+               visible="false"
+               scale="0 0 0"
+               material="shader: flat; src: #juiceVideo;">
+      </a-plane>
+    </a-entity>
+  </a-scene>
 
-  <script>
-    const scene = document.querySelector('a-scene');
-    const video = document.querySelector('#juiceVideo');
-    const plane = document.getElementById('videoPlane');
-    const heartsContainer = document.getElementById('hearts');
-    const share = document.getElementById('share');
-    let heartInterval = null;
+  <script>
+    const scene = document.querySelector('a-scene');
+    const video = document.querySelector('#juiceVideo');
+    const plane = document.getElementById('videoPlane');
+    const heartsContainer = document.getElementById('hearts');
+    const share = document.getElementById('share');
+    let heartInterval = null;
 
-    // Resize plane based on video aspect ratio
-    video.addEventListener('loadedmetadata', () => {
-      const aspect = video.videoWidth / video.videoHeight;
-      plane.setAttribute('width', 1);
-      plane.setAttribute('height', 1 / aspect);
-    });
+    // Resize plane based on video aspect ratio
+    video.addEventListener('loadedmetadata', () => {
+      const aspect = video.videoWidth / video.videoHeight;
+      // Setting width to 1 unit to match the image target's typical width
+      plane.setAttribute('width', 1);
+      plane.setAttribute('height', 1 / aspect);
+    });
 
-    // Floating heart spawner (transparent glow)
-    function spawnHeart(){
-      const h = document.createElement('div');
-      h.className = 'heart';
-      h.innerText = '❤️';
-      h.style.left = Math.random()*100 + 'vw';
-      h.style.fontSize = (16 + Math.random()*28) + 'px';
-      h.style.animationDuration = (5 + Math.random()*4) + 's';
-      heartsContainer.appendChild(h);
-      setTimeout(() => h.remove(), 9000);
-    }
+    // Floating heart spawner (transparent glow)
+    function spawnHeart(){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.innerText = '❤️';
+      h.style.left = Math.random()*100 + 'vw';
+      h.style.fontSize = (16 + Math.random()*28) + 'px';
+      h.style.animationDuration = (5 + Math.random()*4) + 's';
+      heartsContainer.appendChild(h);
+      setTimeout(() => h.remove(), 9000);
+    }
 
-    // When target found
-    scene.addEventListener('targetFound', async () => {
-      console.log("Target found");
+    // When target found
+    scene.addEventListener('targetFound', async () => {
+      console.log("Target found");
 
-      // show plane + smooth pop-in animation
-      plane.setAttribute('visible', true);
-      plane.setAttribute('animation__scale', {
-        property: 'scale',
-        from: '0 0 0',
-        to: '1 1 1',
-        dur: 900,
-        easing: 'easeOutElastic'
-      });
+      // show plane + smooth pop-in animation
+      plane.setAttribute('visible', true);
+      plane.setAttribute('animation__scale', {
+        property: 'scale',
+        from: '0 0 0',
+        to: '1 1 1',
+        dur: 900,
+        easing: 'easeOutElastic'
+      });
 
-      try {
-        video.muted = true;
-        await video.play();
-        setTimeout(()=>video.muted=false, 500);
-      } catch(e){
-        console.warn("Autoplay blocked:", e);
-      }
+      try {
+        video.muted = true;
+        await video.play();
+        setTimeout(()=>video.muted=false, 500);
+      } catch(e){
+        console.warn("Autoplay blocked:", e);
+      }
 
-      if(!heartInterval){
-        spawnHeart();
-        heartInterval = setInterval(spawnHeart, 800);
-      }
-    });
+      if(!heartInterval){
+        spawnHeart();
+        heartInterval = setInterval(spawnHeart, 800);
+      }
+    });
 
-    // When target lost
-    scene.addEventListener('targetLost', () => {
-      console.log("Target lost");
-      plane.setAttribute('visible', false);
-      video.pause();
-      if(heartInterval){
-        clearInterval(heartInterval);
-        heartInterval = null;
-      }
-    });
+    // When target lost
+    scene.addEventListener('targetLost', () => {
+      console.log("Target lost");
+      plane.setAttribute('visible', false);
+      video.pause();
+      if(heartInterval){
+        clearInterval(heartInterval);
+        heartInterval = null;
+      }
+    });
 
-    // When video ends
-    video.addEventListener('ended', () => {
-      if(heartInterval){
-        clearInterval(heartInterval);
-        heartInterval = null;
-      }
-      share.style.display = 'block';
-    });
+    // When video ends
+    video.addEventListener('ended', () => {
+      if(heartInterval){
+        clearInterval(heartInterval);
+        heartInterval = null;
+      }
+      share.style.display = 'block';
+    });
 
-    // Share links
-    const pageUrl = encodeURIComponent(window.location.href);
-    const msg = encodeURIComponent("Check out this AR Juice demo!");
-    document.getElementById('shareFb').href = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}&quote=${msg}`;
-    document.getElementById('shareX').href = `https://twitter.com/intent/tweet?text=${msg}%20${pageUrl}`;
-  </script>
+    // Share links
+    const pageUrl = encodeURIComponent(window.location.href);
+    const msg = encodeURIComponent("Check out this AR Juice demo!");
+    document.getElementById('shareFb').href = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}&quote=${msg}`;
+    document.getElementById('shareX').href = `https://twitter.com/intent/tweet?text=${msg}%20${pageUrl}`;
+  </script>
 </body>
 </html>
