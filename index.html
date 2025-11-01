@@ -3,48 +3,122 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>AR Video Demo</title>
+    <title>AR Video Auto Ratio</title>
 
     <!-- A-Frame + MindAR -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-      body, html { margin: 0; overflow: hidden; }
-      #loading {
-        position: fixed; inset: 0;
-        background: #000; color: white;
-        display: flex; align-items: center; justify-content: center;
-        font-family: sans-serif; z-index: 10;
+      body, html {
+        margin: 0;
+        overflow: hidden;
+        height: 100%;
+        background: black;
+      }
+      #status {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-family: sans-serif;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 5px 12px;
+        border-radius: 8px;
       }
     </style>
   </head>
 
   <body>
-    <div id="loading">Loading AR Experience...</div>
+    <div id="status">📷 Initializing...</div>
 
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind;" 
-             color-space="sRGB"
-             renderer="colorManagement: true, physicallyCorrectLights"
-             vr-mode-ui="enabled: false"
-             device-orientation-permission-ui="enabled: false">
-      
+    <a-scene
+      mindar-image="imageTargetSrc: targets.mind; autoStart: true;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights: false, alpha: true"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+      embedded
+    >
       <a-assets>
-        <video id="sample-video" src="./sample.mp4" autoplay loop muted playsinline></video>
+        <video
+          id="myVideo"
+          src="sample.mp4"
+          autoplay="false"
+          loop
+          preload="auto"
+          playsinline
+          webkit-playsinline
+          crossorigin="anonymous"
+        ></video>
       </a-assets>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-camera look-controls="enabled: false"></a-camera>
 
-      <!-- When target is found, play video -->
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-video src="#sample-video" width="1" height="0.6" position="0 0 0"></a-video>
+        <a-video
+          id="videoPlane"
+          src="#myVideo"
+          position="0 0 0"
+          rotation="0 0 0"
+          width="1"
+          height="0.56"
+          visible="false"
+        ></a-video>
       </a-entity>
     </a-scene>
 
     <script>
-      window.addEventListener('load', () => {
-        const loading = document.getElementById('loading');
-        setTimeout(() => loading.style.display = 'none', 2000);
+      const scene = document.querySelector("a-scene");
+      const video = document.querySelector("#myVideo");
+      const plane = document.querySelector("#videoPlane");
+      const status = document.getElementById("status");
+
+      // 🧠 Detect video ratio automatically
+      video.addEventListener("loadedmetadata", () => {
+        const videoWidth = video.videoWidth;
+        const videoHeight = video.videoHeight;
+
+        if (videoWidth && videoHeight) {
+          const aspectRatio = videoWidth / videoHeight;
+
+          if (aspectRatio >= 1) {
+            // Landscape (wider)
+            plane.setAttribute("width", 1);
+            plane.setAttribute("height", 1 / aspectRatio);
+          } else {
+            // Portrait (taller)
+            plane.setAttribute("height", 1);
+            plane.setAttribute("width", aspectRatio);
+          }
+
+          console.log(`Video ratio: ${aspectRatio.toFixed(2)} (${aspectRatio >= 1 ? "Landscape" : "Portrait"})`);
+        }
+      });
+
+      scene.addEventListener("arReady", () => {
+        status.innerText = "✅ Point camera at your target";
+      });
+
+      scene.addEventListener("targetFound", async () => {
+        console.log("Target Found");
+        status.innerText = "🎬 Playing video...";
+        plane.setAttribute("visible", true);
+        try {
+          await video.play();
+        } catch (err) {
+          console.warn("Autoplay blocked", err);
+          video.muted = true;
+          await video.play();
+        }
+      });
+
+      scene.addEventListener("targetLost", () => {
+        console.log("Target Lost");
+        status.innerText = "❌ Target lost, hold camera steady";
+        video.pause();
+        plane.setAttribute("visible", false);
       });
     </script>
   </body>
