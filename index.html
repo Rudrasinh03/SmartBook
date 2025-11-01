@@ -16,7 +16,7 @@
       background: transparent;
     }
 
-    /* CRITICAL FIX for mobile alignment */
+    /* CRITICAL FIX for mobile alignment (from previous step) */
     a-scene {
         position: fixed; 
         top: 0;
@@ -25,7 +25,6 @@
         height: 100%;
     }
 
-    /* ... other styles omitted for brevity ... */
     .hearts-container {
       position: fixed;
       inset: 0;
@@ -33,6 +32,7 @@
       z-index: 9998;
       overflow: hidden;
     }
+
     .heart {
       position: absolute;
       bottom: -30px;
@@ -41,6 +41,7 @@
       filter: drop-shadow(0 0 6px rgba(255,0,100,0.8));
       animation: floatUp linear forwards;
     }
+
     @keyframes floatUp {
       0% {
         transform: translateY(0) scale(1) rotate(0deg);
@@ -55,6 +56,7 @@
         opacity: 0;
       }
     }
+
     #share {
       display: none;
       position: fixed;
@@ -69,6 +71,7 @@
       border-radius: 10px;
       backdrop-filter: blur(6px);
     }
+
     #share a {
       color: #ff6b00;
       margin: 0 8px;
@@ -100,7 +103,7 @@
 
     <a-entity mindar-image-target="targetIndex: 0">
             <a-plane id="videoPlane"
-               position="0 0 0.01" 
+               position="0 0 0" 
                rotation="0 0 0"
                visible="false"
                scale="0 0 0"
@@ -117,17 +120,23 @@
     const share = document.getElementById('share');
     let heartInterval = null;
 
-    // Resize plane based on video aspect ratio
+    // Resize plane based on video aspect ratio and set Y-position to place it at the top edge
     video.addEventListener('loadedmetadata', () => {
       const aspect = video.videoWidth / video.videoHeight;
-      const scaleFactor = 1.0; // ✅ TRIAL 1: Keep at 1.0. If issues persist, try 0.95 or 0.9 to slightly shrink the video plane.
+      const scaleFactor = 1.0; 
+      const planeHeight = scaleFactor / aspect;
 
+      // 1. Set the dimensions
       plane.setAttribute('width', scaleFactor);
-      plane.setAttribute('height', scaleFactor / aspect);
+      plane.setAttribute('height', planeHeight);
+
+      // 2. Calculate the position for TOP alignment
+      // Y-position: Half the plane's height + a tiny Z-offset (0.01) to lift it above the target
+      plane.setAttribute('position', `0 ${planeHeight / 2 + 0.01} 0.01`);
     });
 
-    // ... rest of the JavaScript remains the same ...
-    function spawnHeart(){
+    // Floating heart spawner (transparent glow)
+    function spawnHeart(){
       const h = document.createElement('div');
       h.className = 'heart';
       h.innerText = '❤️';
